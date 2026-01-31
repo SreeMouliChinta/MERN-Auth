@@ -7,7 +7,6 @@ import { toast } from "react-toastify";
 
 const EmailVerify = () => {
   const navigate = useNavigate();
-  axios.defaults.withCredentials = true;
   const { backendUrl, isLoggedIn, userData, getUserData } =
     useContext(AppContext);
 
@@ -43,6 +42,7 @@ const EmailVerify = () => {
       const { data } = await axios.post(
         backendUrl + "/api/auth/verify-account",
         { otp },
+        { withCredentials: true },
       );
       if (data.success) {
         toast.success(data.message);
