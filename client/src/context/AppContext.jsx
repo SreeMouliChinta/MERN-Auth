@@ -1,5 +1,5 @@
 import axios from "axios";
-import { createContext, useEffect, useState } from "react";
+import { createContext, useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
 
 export const AppContext = createContext();
@@ -7,7 +7,7 @@ export const AppContext = createContext();
 export const AppContextProvider = (props) => {
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userData, setUserData] = useState(false);
+  const [userData, setUserData] = useState(null);
 
   const getAuthState = async () => {
     try {
@@ -16,7 +16,7 @@ export const AppContextProvider = (props) => {
       });
       if (data.success) {
         setIsLoggedIn(true);
-        getUserData();
+        await getUserData();
       }
     } catch (error) {
       toast.error(error.message);
@@ -35,17 +35,23 @@ export const AppContextProvider = (props) => {
   };
 
   useEffect(() => {
-    getAuthState();
+    const init = async () => {
+      await getAuthState();
+    };
+    init();
   }, []);
 
-  const value = {
-    backendUrl,
-    isLoggedIn,
-    setIsLoggedIn,
-    userData,
-    setUserData,
-    getUserData,
-  };
+  const value = useMemo(
+    () => ({
+      backendUrl,
+      isLoggedIn,
+      setIsLoggedIn,
+      userData,
+      setUserData,
+      getUserData,
+    }),
+    [backendUrl, isLoggedIn, userData],
+  );
 
   return (
     <AppContext.Provider value={value}>{props.children}</AppContext.Provider>
