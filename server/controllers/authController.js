@@ -43,7 +43,11 @@ export const register = async (req, res) => {
       text: `Welcome to MERN Auth Website. Your account has been created with email id:${email}`,
     };
 
-    await transporter.sendMail(mailOptions);
+    try {
+      await transporter.sendMail(mailOptions);
+    } catch (e) {
+      console.error("Email failed:", e.message);
+    }
 
     return res.json({ success: true });
   } catch (err) {
@@ -98,7 +102,7 @@ export const logout = async (req, res) => {
     });
 
     return res.json({ success: true, message: "Logged Out" });
-  } catch {
+  } catch (err) {
     return res.json({ success: false, message: err.message });
   }
 };
@@ -118,7 +122,7 @@ export const sendVerifyOtp = async (req, res) => {
     user.verifyOtpExpireAt = Date.now() + 24 * 60 * 60 * 1000;
     await user.save();
 
-    const mailOption = {
+    const mailOptions = {
       from: process.env.SENDER_EMAIL,
       to: user.email,
       subject: "Account Verification OTP",
@@ -128,7 +132,11 @@ export const sendVerifyOtp = async (req, res) => {
         user.email,
       ),
     };
-    await transporter.sendMail(mailOption);
+    try {
+      await transporter.sendMail(mailOptions);
+    } catch (e) {
+      console.error("Email failed:", e.message);
+    }
 
     res.json({ success: true, message: "Verification OTP Sent on Email" });
   } catch (err) {
@@ -190,7 +198,7 @@ export const sendResetOtp = async (req, res) => {
     user.resetOtpExpireAt = Date.now() + 15 * 60 * 1000;
     await user.save();
 
-    const mailOption = {
+    const mailOptions = {
       from: process.env.SENDER_EMAIL,
       to: user.email,
       subject: "Password Reset OTP",
@@ -200,7 +208,11 @@ export const sendResetOtp = async (req, res) => {
         user.email,
       ),
     };
-    await transporter.sendMail(mailOption);
+    try {
+      await transporter.sendMail(mailOptions);
+    } catch (e) {
+      console.error("Email failed:", e.message);
+    }
 
     res.json({ success: true, message: "Reset OTP sent to your Email" });
   } catch (err) {

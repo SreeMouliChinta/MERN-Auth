@@ -1,13 +1,10 @@
-import React, { useContext, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { assets } from "../assets/assets";
 import { useNavigate } from "react-router-dom";
-import { AppContext } from "../context/AppContext";
-import axios from "axios";
 import { toast } from "react-toastify";
+import api from "../api/axios";
 
 const ResetPassword = () => {
-  const { backendUrl } = useContext(AppContext);
-
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -41,11 +38,7 @@ const ResetPassword = () => {
   const onSubmitEmail = async (event) => {
     event.preventDefault();
     try {
-      const { data } = await axios.post(
-        backendUrl + "/api/auth/send-reset-otp",
-        { email },
-        { withCredentials: true },
-      );
+      const { data } = await api.post("/api/auth/send-reset-otp", { email });
       data.success ? toast.success(data.message) : toast.error(data.message);
       data.success && setIsEmailSent(true);
     } catch (error) {
@@ -63,11 +56,11 @@ const ResetPassword = () => {
   const onSubmitNewPassword = async (event) => {
     event.preventDefault();
     try {
-      const { data } = await axios.post(
-        backendUrl + "/api/auth/reset-password",
-        { email, otp, newPassword },
-        { withCredentials: true },
-      );
+      const { data } = await api.post("/api/auth/reset-password", {
+        email,
+        otp,
+        newPassword,
+      });
       data.success ? toast.success(data.message) : toast.error(data.message);
       data.success && navigate("/login");
     } catch (error) {
