@@ -3,20 +3,15 @@ import { assets } from "../assets/assets";
 import { useNavigate } from "react-router-dom";
 import { AppContext } from "../context/AppContext";
 import { toast } from "react-toastify";
-import axios from "axios";
+import api from "../api/axios";
 
 const NavBar = () => {
   const navigate = useNavigate();
-  const { userData, backendUrl, setUserData, setIsLoggedIn } =
-    useContext(AppContext);
+  const { userData, setUserData, setIsLoggedIn } = useContext(AppContext);
 
   const sendVerificationOtp = async () => {
     try {
-      axios.defaults.withCredentials = true;
-
-      const { data } = await axios.post(
-        backendUrl + "/api/auth/send-verify-otp",
-      );
+      const { data } = await api.post("/api/auth/send-verify-otp");
       if (data.success) {
         navigate("/email-verify");
         toast.success(data.message);
@@ -30,8 +25,7 @@ const NavBar = () => {
 
   const logout = async () => {
     try {
-      axios.defaults.withCredentials = true;
-      const { data } = await axios.post(backendUrl + "/api/auth/logout");
+      const { data } = await api.post("/api/auth/logout");
       data.success && setIsLoggedIn(false);
       data.success && setUserData(false);
       navigate("/");
