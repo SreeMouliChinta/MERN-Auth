@@ -10,7 +10,9 @@ const app = express();
 const port = process.env.PORT || 4000;
 connectDB();
 
-const allowedOrigins = ["http://localhost:5173", process.env.CLIENT_URL];
+const allowedOrigins = ["http://localhost:5173", process.env.CLIENT_URL].filter(
+  Boolean,
+);
 
 app.use(express.json());
 app.use(cookieParser());
@@ -19,6 +21,9 @@ app.use(cors({ origin: allowedOrigins, credentials: true }));
 // API Endpoints
 app.get("/", (req, res) => {
   res.send("API Working");
+});
+app.get("/health", (req, res) => {
+  res.json({ success: "ok" });
 });
 app.use("/api/auth", authRouter);
 app.use("/api/user", userRouter);
