@@ -1,11 +1,31 @@
-import nodemailer from "nodemailer";
+import axios from "axios";
 
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
+const sendEmail = async ({ to, subject, html }) => {
+  try {
+    await axios.post(
+      "https://api.brevo.com/v3/smtp/email", // HTTPS → port 443
+      {
+        sender: {
+          email: process.env.SENDER_EMAIL,
+        },
+        to: [{ email: to }],
+        subject,
+        htmlContent: html,
+      },
+      {
+        headers: {
+          "api-key": process.env.BREVO_API_KEY,
+          "Content-Type": "application/json",
+        },
+        timeout: 10000,
+      },
+    );
 
-export default transporter;
+    console.log("✅ Email sent");
+  } catch (err) {
+    console.error("❌ Brevo email error:", err.response?.data || err.message);
+    throw err;
+  }
+};
+
+export default sendEmail;

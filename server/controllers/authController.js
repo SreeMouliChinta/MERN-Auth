@@ -1,11 +1,11 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import userModel from "../models/userModel.js";
-import transporter from "../config/transporter.js";
 import {
   EMAIL_VERIFY_TEMPLATE,
   PASSWORD_RESET_TEMPLATE,
 } from "../config/emailTemplates.js";
+import sendEmail from "../config/transporter.js";
 
 export const register = async (req, res) => {
   const { name, email, password } = req.body;
@@ -36,15 +36,15 @@ export const register = async (req, res) => {
     });
 
     // Sending welcome email
-    const mailOptions = {
-      from: process.env.SENDER_EMAIL,
-      to: email,
-      subject: "Welcome to MERN Auth",
-      text: `Welcome to MERN Auth Website. Your account has been created with email id:${email}`,
-    };
-
     try {
-      await transporter.sendMail(mailOptions);
+      await sendEmail({
+        to: user.email,
+        subject: "Welcome to MERN Auth",
+        html: `
+    <h1>Welcome to MERN Auth Website</h1>
+    <p>Your account has been created with email: ${user.email}</p>
+  `,
+      });
     } catch (e) {
       console.error("Email failed:", e.message);
     }
@@ -121,19 +121,15 @@ export const sendVerifyOtp = async (req, res) => {
     user.verifyOtp = otp;
     user.verifyOtpExpireAt = Date.now() + 24 * 60 * 60 * 1000;
     await user.save();
-
-    const mailOptions = {
-      from: process.env.SENDER_EMAIL,
-      to: user.email,
-      subject: "Account Verification OTP",
-      // text: `Your OTP is ${otp}. Verify your account this OTP`,
-      html: EMAIL_VERIFY_TEMPLATE.replace("{{otp}}", otp).replace(
-        "{{email}}",
-        user.email,
-      ),
-    };
     try {
-      await transporter.sendMail(mailOptions);
+      await sendEmail({
+        to: user.email,
+        subject: "Account Verification OTP",
+        html: EMAIL_VERIFY_TEMPLATE.replace("{{otp}}", otp).replace(
+          "{{email}}",
+          user.email,
+        ),
+      });
     } catch (e) {
       console.error("Email failed:", e.message);
     }
@@ -198,18 +194,15 @@ export const sendResetOtp = async (req, res) => {
     user.resetOtpExpireAt = Date.now() + 15 * 60 * 1000;
     await user.save();
 
-    const mailOptions = {
-      from: process.env.SENDER_EMAIL,
-      to: user.email,
-      subject: "Password Reset OTP",
-      // text: `Your OTP for resetting your password is ${otp}. Use this OTP to proceed with resetting your password`,
-      html: PASSWORD_RESET_TEMPLATE.replace("{{otp}}", otp).replace(
-        "{{email}}",
-        user.email,
-      ),
-    };
     try {
-      await transporter.sendMail(mailOptions);
+      await sendEmail({
+        to: user.email,
+        subject: "Password Reset OTP",
+        html: PASSWORD_RESET_TEMPLATE.replace("{{otp}}", otp).replace(
+          "{{email}}",
+          user.email,
+        ),
+      });
     } catch (e) {
       console.error("Email failed:", e.message);
     }
